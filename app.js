@@ -4,7 +4,6 @@ const { open } = require("sqlite");
 const sqlite3 = require("sqlite3");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
-const { format, isValid } = require("date-fns");
 
 const app = express();
 app.use(express.json());
@@ -21,6 +20,7 @@ const initializeDbAndServer = async () => {
     });
     app.listen(3000, () => {
       console.log("Server is running ...");
+      console.log(new Date(), "yyyy-MM-dd HH:mm:ss");
     });
   } catch (e) {
     console.log(`DB Error: ${e.message}`);
@@ -57,7 +57,7 @@ const authenticateToken = async (request, response, next) => {
     }
   } else {
     response.status(401);
-    response.send("Invalid Authorization Header");
+    response.send("Invalid JWT Token");
   }
 };
 
@@ -148,7 +148,7 @@ app.get("/user/tweets/feed/", authenticateToken, async (request, response) => {
     ORDER BY tweet.date_time DESC
     LIMIT 4;`;
   const tweetDetails = await db.all(getTweetsQuery);
-  response.send(tweets);
+  response.send(tweetDetails);
 });
 
 //API 4 - USER FOLLOWS
@@ -224,7 +224,7 @@ app.get(
     const { tweetId } = request;
     const likedUsersQuery = `
     SELECT
-    DISTINCT(name)
+    name
     FROM
     like
     JOIN
@@ -293,6 +293,10 @@ app.get("/user/tweets/", authenticateToken, async (request, response) => {
 //API 10 - CREATE TWEET
 app.post("/user/tweets/", authenticateToken, async (request, response) => {
   const { userId, tweet } = request;
+  const dateObj = new Date().toJSON();
+  const dateTime = dateObj.slice(0, 10) + " " + dateObj.slice(11, 19);
+  console.log(dateTime);
+
   const createTweetQuery = `
     INSERT 
     INTO
@@ -302,7 +306,7 @@ app.post("/user/tweets/", authenticateToken, async (request, response) => {
     (
         '${tweet}',
         ${userId},
-        '${format(new Date(), "yyyy-MM-dd HH:mm:ss")}'
+        '${dateTime}'
         );`;
   await db.run(createTweetQuery);
   response.send("Created a Tweet");
