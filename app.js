@@ -219,8 +219,9 @@ app.get(
     username
     FROM
     like
-    JOIN
+    INNER JOIN 
     user
+    ON like.user_id = user.user_id
     WHERE
     tweet_id = ${tweetId};`;
     const likedUsers = await db.all(likedUsersQuery);
@@ -242,7 +243,10 @@ app.get(
   reply
   FROM
   reply
-  JOIN user
+  INNER JOIN 
+  user
+  ON
+  reply.user_id = user.user_id
   WHERE 
   tweet_id = 2;`;
     const replyDetails = await db.all(repliesQuery);
