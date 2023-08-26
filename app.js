@@ -20,7 +20,6 @@ const initializeDbAndServer = async () => {
     });
     app.listen(3000, () => {
       console.log("Server is running ...");
-      console.log(new Date(), "yyyy-MM-dd HH:mm:ss");
     });
   } catch (e) {
     console.log(`DB Error: ${e.message}`);
@@ -47,7 +46,6 @@ const authenticateToken = async (request, response, next) => {
           request.userId = payload.user_id;
           request.tweetId = tweetId;
           request.tweet = tweet;
-          console.log(payload);
           next();
         }
       });
@@ -78,8 +76,6 @@ const userTweetRequest = async (request, response, next) => {
     next();
   }
 };
-
-const getUsers = (user) => user.name;
 
 //API 1 - ADD USER API
 app.post("/register/", async (request, response) => {
@@ -119,7 +115,6 @@ app.post("/login/", async (request, response) => {
     const isPasswordMatched = await bcrypt.compare(password, user.password);
     if (isPasswordMatched) {
       const payload = { username: username, user_id: user.user_id };
-      console.log(payload);
       const jwtToken = jwt.sign(payload, "MY_SECRET_TOKEN");
       response.send({ jwtToken });
     } else {
@@ -135,7 +130,6 @@ app.post("/login/", async (request, response) => {
 //API 3 - LATEST TWEETS
 app.get("/user/tweets/feed/", authenticateToken, async (request, response) => {
   const { username, userId } = request;
-  console.log(userId);
   const getTweetsQuery = `
   SELECT 
   username, 
@@ -168,7 +162,6 @@ app.get("/user/following/", authenticateToken, async (request, response) => {
 //API 5 - PEOPLE FOLLOWS USER
 app.get("/user/followers/", authenticateToken, async (request, response) => {
   const { username, userId } = request;
-  console.log(userId);
   const userFollowersQuery = `
     SELECT
     name
@@ -210,7 +203,6 @@ app.get(
     FROM 
     tweet;`;
     const followingUserTweet = await db.get(followingTweetsQuery);
-    console.log(followingUserTweet);
     response.send(followingUserTweet);
   }
 );
@@ -224,7 +216,7 @@ app.get(
     const { tweetId } = request;
     const likedUsersQuery = `
     SELECT
-    name
+    username
     FROM
     like
     JOIN
@@ -232,7 +224,7 @@ app.get(
     WHERE
     tweet_id = ${tweetId};`;
     const likedUsers = await db.all(likedUsersQuery);
-    likedUsersList = likedUsers.map((user) => getUsers(user));
+    likedUsersList = likedUsers.map((user) => user.username);
     response.send({ likes: likedUsersList });
   }
 );
@@ -295,8 +287,6 @@ app.post("/user/tweets/", authenticateToken, async (request, response) => {
   const { userId, tweet } = request;
   const dateObj = new Date().toJSON();
   const dateTime = dateObj.slice(0, 10) + " " + dateObj.slice(11, 19);
-  console.log(dateTime);
-
   const createTweetQuery = `
     INSERT 
     INTO
@@ -307,7 +297,7 @@ app.post("/user/tweets/", authenticateToken, async (request, response) => {
         '${tweet}',
         ${userId},
         '${dateTime}'
-        );`;
+    );`;
   await db.run(createTweetQuery);
   response.send("Created a Tweet");
 });
@@ -321,7 +311,6 @@ app.delete(
     const getTweet = `
     SELECT * FROM tweet WHERE tweet_id = ${tweetId};`;
     const tweetDetails = await db.get(getTweet);
-    console.log(tweetDetails);
     if (tweetDetails === undefined) {
       response.status(401);
       response.send("Invalid Request");
