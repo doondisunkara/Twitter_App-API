@@ -145,7 +145,7 @@ app.get("/user/tweets/feed/", authenticateToken, async (request, response) => {
   response.send(tweetDetails);
 });
 
-//API 4 - USER FOLLOWS
+//API 4 - FOLLOWING USERS
 app.get("/user/following/", authenticateToken, async (request, response) => {
   const { username, userId } = request;
   const getFollowsQuery = `
@@ -155,22 +155,22 @@ app.get("/user/following/", authenticateToken, async (request, response) => {
     follower
     INNER JOIN user ON follower.following_user_id = user.user_id
     WHERE follower_user_id = ${userId};`;
-  const followUsers = await db.all(getFollowsQuery);
-  response.send(followUsers);
+  const followingUsers = await db.all(getFollowsQuery);
+  response.send(followingUsers);
 });
 
-//API 5 - PEOPLE FOLLOWS USER
+//API 5 - FOLLOWERS
 app.get("/user/followers/", authenticateToken, async (request, response) => {
   const { username, userId } = request;
-  const userFollowersQuery = `
+  const followersQuery = `
     SELECT
     name
     FROM
     follower
     INNER JOIN user ON follower.follower_user_id = user.user_id
     WHERE following_user_id = ${userId};`;
-  const userFollowers = await db.all(userFollowersQuery);
-  response.send(userFollowers);
+  const followers = await db.all(followersQuery);
+  response.send(followers);
 });
 
 //API 6 - TWEETS OF FOLLOWING USERS
