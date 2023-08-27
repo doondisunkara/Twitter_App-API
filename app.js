@@ -267,7 +267,7 @@ app.get("/user/tweets/", authenticateToken, async (request, response) => {
         FROM
         like
         WHERE
-        tweet_id = 
+        tweet_id = tweet.tweet_id
     ) AS likes,
     (
         SELECT
@@ -275,7 +275,7 @@ app.get("/user/tweets/", authenticateToken, async (request, response) => {
         FROM
         reply
         WHERE
-        tweet_id = 
+        tweet_id = tweet.tweet_id
     ) AS replies,
   date_time AS dateTime
   FROM
