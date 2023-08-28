@@ -289,18 +289,15 @@ app.get("/user/tweets/", authenticateToken, async (request, response) => {
 //API 10 - CREATE TWEET
 app.post("/user/tweets/", authenticateToken, async (request, response) => {
   const { userId, tweet } = request;
-  const dateObj = new Date().toJSON();
-  const dateTime = dateObj.slice(0, 10) + " " + dateObj.slice(11, 19);
   const createTweetQuery = `
     INSERT 
     INTO
     tweet 
-    (tweet, user_id, date_time)
+    (tweet, user_id)
     VALUES
     (
         '${tweet}',
-        ${userId},
-        '${dateTime}'
+        ${userId}
     );`;
   await db.run(createTweetQuery);
   response.send("Created a Tweet");
